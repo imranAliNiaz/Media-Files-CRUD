@@ -9,7 +9,7 @@ const Model = ({setModel,editData,setEditData}:any) => {
           HandleEditFunction(editData)
          }
      },[editData.status])
-    async function HandleEditFunction(){
+    async function HandleEditFunction(editData:any){
         const response=await editFile(editData)
         if(response.sucess){
             setModel(false)
@@ -38,7 +38,7 @@ const Model = ({setModel,editData,setEditData}:any) => {
     </div>
     <CldUploadWidget 
       uploadPreset="todo_app"
-     onSuccess={({event,info})=>{
+     onSuccess={({event,info}:any)=>{
     if(event === "success"){
       
       setEditData({data:{id:editData.data.id,url:info?.secure_url,format:info?.resource_type},status:true})
