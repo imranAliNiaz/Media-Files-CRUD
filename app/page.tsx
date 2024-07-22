@@ -1,113 +1,143 @@
-import Image from "next/image";
+"use client"
+import { useState, useEffect } from 'react';
+import { getAllFile, putNewFile, deleteFile, editFile } from '@/app/services/index';
+import { CldUploadWidget } from 'next-cloudinary';
+import { MdDelete } from 'react-icons/md';
+import { FaEdit } from 'react-icons/fa';
+import Model from '@/app/components/modelfile';
 
 export default function Home() {
+  const [url, setUrl] = useState(null);
+  const [model, setModel] =useState<any> (false);
+  const [result, setResult] = useState([]);
+  const [editData, setEditData] = useState(null);
+  const [hover, setHover] = useState(-1);
+  const [file,setfile]=useState(0)
+ const [realdata,setrealdata]=useState([])
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+  useEffect(()=>{
+    if(file==1){
+      let r=realdata?.filter((item)=>{return item.format=="video"})
+      setResult(r)
+     
+    }
+    else if(file==2){
+      let w=realdata?.filter((item)=>{return item.format=="image"})
+      setResult(w)
+      
+    }
+    else{
+      let q=realdata?.filter((item)=>{return item})
+      setResult(q)
+    
+    }
+   },[file])
+
+  async function fetchData() {
+    const response = await getAllFile();
+    console.log("fetchData", response)
+    if (response.success) {
+      setResult(response.data);
+      setrealdata(response.data)
+    }
+  }
+
+  useEffect(() => {
+    if (url) {
+      putFile();
+      console.log("URL", url);
+    }
+  }, [url]);
+
+  async function putFile() {
+    const response = await putNewFile(url);
+    if (response.success) {
+      fetchData();
+      setUrl(null);
+      console.log("RESPONSE", response);
+    }
+  }
+
+  async function handleDelete(data) {
+    console.log("DATA", data);
+    const response = await deleteFile(data);
+    if (response.success) {
+      fetchData();
+      console.log("DELETE RESPONSE", response);
+    }
+  }
+
+  async function handleEdit(data) {
+    setModel(true);
+    setEditData({ data, status: false });
+    console.log("MODEL");
+    console.log("DATA", data);
+  }
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+    <div>
+      {model && <Model setModel={setModel} editData={editData} setEditData={setEditData} />}
+      <div className='sticky top-0 z-50'>
+      <div className='min-h-xl  pb-10 bg-white text-left p-5  flex justify-between gap-2 shadow-2xl'>
+      <CldUploadWidget 
+      uploadPreset="todo_app"
+     onSuccess={({event,info})=>{
+    if(event === "success"){
+      setUrl({url:info?.secure_url,format:info?.resource_type})
+    }
+}}>
+  {({ open }) => {
+    return (
+      <button 
+      className="text-md p-2 bg-green-400 text-white lowercase rounded-md"
+      onClick={() => open()}>
+       {!url?"Upload File":"Loading"}
+      </button>
+    );
+  }}
+      </CldUploadWidget>
+     </div>
+    <div className='p-3 rounded-es-3xl  flex justify-center gap-10 bg-white mb-10  w-[50%] absolute right-0 before:bg-white shadow-xl  before:h-full before:w-[80px] before:rotate-45 before:bottom-6  before:absolute before:-left-10'>
+            <button onClick={()=>setfile(0)} className='uppercase text-sm text-green-600'>All</button>      
+            <button onClick={()=>setfile(1)} className='uppercase text-sm text-green-600'>Videos</button>          
+            <button onClick={()=>setfile(2)} className='uppercase text-sm text-green-600'>Images</button>
+      </div>
       </div>
 
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
+      <div className='grid grid-cols-3 gap-3 px-10 mt-20'>
+        {result && result.length > 0 ? result.map((item, index) => (
+          <div key={index} className='cursor-pointer relative transition-all duration-100 delay-100 hover:scale-90'>
+            {item.format === 'image' ? (
+              <div onMouseEnter={() => setHover(index)} onMouseLeave={() => setHover(-1)}>
+                <img src={item.url} alt="img" className='w-full' />
+                {hover === index && (
+                  <div className='absolute bottom-2 left-2 flex justify-center items-center gap-2'>
+                    <FaEdit onClick={() => handleEdit(item)} className='text-3xl text-green-500 bg-white rounded-full p-1' />
+                    <MdDelete onClick={() => handleDelete(item)} className='text-3xl text-green-500 bg-white rounded-full p-1' />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div onMouseEnter={() => setHover(index)} onMouseLeave={() => setHover(-1)}>
+                <video className='w-full h-full' controls autoPlay loop>
+                  <source src={item.url} type="video/mp4" />
+                </video>
+                {hover === index && (
+                  <div className='absolute bottom-2 left-2 flex justify-center items-center gap-2'>
+                    <FaEdit onClick={() => handleEdit(item)} className='text-3xl text-green-500 bg-white rounded-full p-1' />
+                    <MdDelete onClick={() => handleDelete(item)} className='text-3xl text-green-500 bg-white rounded-full p-1' />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )) : (
+          <h1 className='text-xl text-center animate-pulse'>Fetching your data...</h1>
+        )}
       </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </div>
   );
 }
