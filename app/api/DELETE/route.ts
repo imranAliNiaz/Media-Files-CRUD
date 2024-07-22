@@ -1,8 +1,9 @@
 import { sql } from '@vercel/postgres';
-import { NextResponse } from 'next/server';
+import { AnyARecord } from 'dns';
+import { NextRequest, NextResponse } from 'next/server';
  export const dynamic = "force-dynamic";
 
-export async function DELETE(request) {
+export async function DELETE(request:NextRequest) {
   try {
     const data=await request.json();
     const result =  await sql`DELETE FROM urls WHERE id = ${data.id};`
