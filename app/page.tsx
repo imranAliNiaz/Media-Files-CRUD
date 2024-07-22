@@ -7,30 +7,30 @@ import { FaEdit } from 'react-icons/fa';
 import Model from '@/app/components/modelfile';
 
 export default function Home() {
-  const [url, setUrl] = useState(null);
+  const [url, setUrl] = useState<any>(null);
   const [model, setModel] =useState<any> (false);
-  const [result, setResult] = useState([]);
-  const [editData, setEditData] = useState(null);
-  const [hover, setHover] = useState(-1);
-  const [file,setfile]=useState(0)
- const [realdata,setrealdata]=useState([])
+  const [result, setResult] = useState<any>([]);
+  const [editData, setEditData] = useState<any>(null);
+  const [hover, setHover] = useState<any>(-1);
+  const [file,setfile]=useState<any>(0)
+ const [realdata,setrealdata]=useState<any>([])
 
   useEffect(() => {
     fetchData();
   }, []);
   useEffect(()=>{
     if(file==1){
-      let r=realdata?.filter((item)=>{return item.format=="video"})
+      let r=realdata?.filter((item:any)=>{return item.format=="video"})
       setResult(r)
      
     }
     else if(file==2){
-      let w=realdata?.filter((item)=>{return item.format=="image"})
+      let w=realdata?.filter((item:any)=>{return item.format=="image"})
       setResult(w)
       
     }
     else{
-      let q=realdata?.filter((item)=>{return item})
+      let q=realdata?.filter((item:any)=>{return item})
       setResult(q)
     
     }
@@ -61,7 +61,7 @@ export default function Home() {
     }
   }
 
-  async function handleDelete(data) {
+  async function handleDelete(data:any) {
     console.log("DATA", data);
     const response = await deleteFile(data);
     if (response.success) {
@@ -70,7 +70,7 @@ export default function Home() {
     }
   }
 
-  async function handleEdit(data) {
+  async function handleEdit(data:any) {
     setModel(true);
     setEditData({ data, status: false });
     console.log("MODEL");
@@ -84,7 +84,7 @@ export default function Home() {
       <div className='min-h-xl  pb-10 bg-white text-left p-5  flex justify-between gap-2 shadow-2xl'>
       <CldUploadWidget 
       uploadPreset="todo_app"
-     onSuccess={({event,info})=>{
+     onSuccess={({event,info}:any)=>{
     if(event === "success"){
       setUrl({url:info?.secure_url,format:info?.resource_type})
     }
@@ -108,7 +108,7 @@ export default function Home() {
       </div>
 
       <div className='grid grid-cols-3 gap-3 px-10 mt-20'>
-        {result && result.length > 0 ? result.map((item, index) => (
+        {result && result.length > 0 ? result.map((item:any, index:number) => (
           <div key={index} className='cursor-pointer relative transition-all duration-100 delay-100 hover:scale-90'>
             {item.format === 'image' ? (
               <div onMouseEnter={() => setHover(index)} onMouseLeave={() => setHover(-1)}>
