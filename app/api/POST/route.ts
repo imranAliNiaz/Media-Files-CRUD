@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
  export const dynamic = "force-dynamic";
-export async function POST(request) {
+export async function POST(request: NextRequest) {
   try {
     const fileStr = await  request.json();
 

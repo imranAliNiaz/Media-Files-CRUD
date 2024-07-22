@@ -1,8 +1,8 @@
 import { sql } from '@vercel/postgres';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
  export const dynamic = "force-dynamic";
 
-export async function PUT(request) {
+export async function PUT(request: NextRequest) {
   try {
     const data=await request.json() 
     console.log("EDIT DATA",data) 
